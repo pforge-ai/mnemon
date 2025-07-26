@@ -1,11 +1,11 @@
 [tool.poetry]
-name = "mnemon"
+name = "evermind"
 version = "0.1.0"
 description = "为智能体打造的“神级记忆装备”，一个可实现永久存活与自我进化的认知核心。"
 authors = ["AlbertCui <albertzhouzhou@gmail.com>", "Gemini"]
 readme = "README.md"
 license = "Apache-2.0"
-repository = "https://github.com/pforge-ai/mnemon"
+repository = "https://github.com/pforge-ai/evermind"
 
 [tool.poetry.dependencies]
 python = "^3.9"

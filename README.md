@@ -1,10 +1,10 @@
-# MNEMON
+# Evermind
 **为智能体打造的“神级记忆装备”，一个可实现永久存活与自我进化的认知核心。**
 
 ## 📖 简介
-MNEMON 是一个专为高级AI智能体设计的、高度模块化、可配置的记忆系统。它的目标远不止于信息的被动存储与检索，而是构建一个能够模拟生物认知、实现主动学习、自我进化和长期成长的动态认知架构。
+Evermind 是一个专为高级AI智能体设计的、高度模块化、可配置的记忆系统。它的目标远不止于信息的被动存储与检索，而是构建一个能够模拟生物认知、实现主动学习、自我进化和长期成长的动态认知架构。
 
-搭载 MNEMON 的智能体将不再遗忘重要的上下文，更能从过去的经验中学习、反思、提炼出新的知识和策略，随着时间的推移而不断成长。
+搭载 Evermind 的智能体将不再遗忘重要的上下文，更能从过去的经验中学习、反思、提炼出新的知识和策略，随着时间的推移而不断成长。
 
 #### 核心设计原则
 🧠 认知模拟: 架构模仿人类记忆的分层与分类机制（情节、语义、程序记忆）。
@@ -31,9 +31,9 @@ MNEMON 是一个专为高级AI智能体设计的、高度模块化、可配置�
 ## 🚀 快速上手
 ### 1. 环境准备, 首先，确保您已安装 Python 3.9+。
 
-#### 安装 MNEMON SDK
+#### 安装 Evermind SDK
 ```
-pip install mnemon
+pip install evermind
 ```
 
 #### 设置您选择的大模型提供商的API密钥
@@ -43,19 +43,19 @@ export DASHSCOPE_API_KEY="your_api_key_here"
 ```
 (可选) 如果您想使用知识图谱功能，可通过Docker启动一个Neo4j实例
 ```
-docker run --name mnemon-neo4j -p 7474:7474 -p 7687:7687 -d -e NEO4J_AUTH=neo4j/password neo4j:5
+docker run --name evermind -neo4j -p 7474:7474 -p 7687:7687 -d -e NEO4J_AUTH=neo4j/password neo4j:5
 ```
 
 ### 2. 使用示例
-下面的示例将展示如何快速启动一个具备完整功能的 MNEMON 实例。
+下面的示例将展示如何快速启动一个具备完整功能的 Evermind 实例。
 ```python
 import logging
 from langchain_community.vectorstores import FAISS
 from langchain_community.graphs import Neo4jGraph
 from langchain_tongyi import ChatTongyi, TongyiEmbeddings
-from mnemon import MemoryManager, MnemonConfig, InProcessTaskQueue
+from evermind import MemoryManager, MnemonConfig, InProcessTaskQueue
 
-# 配置日志，观察MNEMON内部活动
+# 配置日志，观察Evermind内部活动
 logging.basicConfig(level=logging.INFO)
 
 # 1. 初始化依赖组件
@@ -92,13 +92,14 @@ result = memory.query(query)
 
 print(f"\n查询: {query}")
 print(f"回答: {result.synthesized_answer}")
+```
 
-🛠️ 架构与配置
-MNEMON 的核心是 MemoryManager 类，它通过一个统一的API (ingest, query, run_maintenance) 来协调所有内部工作流。
+## 🛠️ 架构与配置
+Evermind 的核心是 MemoryManager 类，它通过一个统一的API (ingest, query, run_maintenance) 来协调所有内部工作流。
 
 您可以通过实例化 MnemonConfig 并修改其属性，来精细地控制系统的每一个行为，例如关闭知识图谱功能、调整RRIF权重、配置记忆维护策略等。
-
-from mnemon import MnemonConfig
+```
+from evermind import MnemonConfig
 
 # 创建一个自定义配置
 custom_config = MnemonConfig(
@@ -111,7 +112,7 @@ custom_config = MnemonConfig(
 ```
 
 ## 🗺️ 路线图
-我们对 MNEMON 有着宏伟的规划，欢迎社区一同参与贡献：
+我们对 Evermind 有着宏伟的规划，欢迎社区一同参与贡献：
 
 [ ] 完善 _run_health_check_stage 的具体实现。
 [ ] 提供更多开箱即用的数据库和任务队列适配器。

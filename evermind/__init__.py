@@ -1,5 +1,5 @@
 """
-MNEMON: 为智能体打造的“神级记忆装备”，一个可实现永久存活与自我进化的认知核心。
+Evermind: 为智能体打造的“神级记忆装备”，一个可实现永久存活与自我进化的认知核心。
 """
 
 from .config import MnemonConfig, RRIFWeights, MaintenanceConfig

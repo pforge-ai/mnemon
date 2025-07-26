@@ -19,7 +19,7 @@ from langchain_community.graphs import Neo4jGraph
 from langchain_community.chat_models.tongyi import ChatTongyi
 from langchain_community.embeddings.dashscope import DashScopeEmbeddings
 
-from mnemon import MemoryManager, MnemonConfig, InProcessTaskQueue, MemoryMetadata
+from evermind import MemoryManager, MnemonConfig, InProcessTaskQueue, MemoryMetadata
 
 API_KEY = "your-api-key"
 
