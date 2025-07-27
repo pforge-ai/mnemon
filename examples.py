@@ -2,12 +2,16 @@ import os
 import logging
 import time
 
-# --- 配置日志，以便观察MNEMON内部的活动 ---
+import dotenv
+
+dotenv.load_dotenv()
+
+# --- 配置日志，以便观察Evermind内部的活动 ---
 logging.basicConfig(
     level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
 )
 
-# --- 导入 LangChain 和 MNEMON 的核心组件 ---
+# --- 导入 LangChain 和 Evermind 的核心组件 ---
 # 在运行此脚本前，请确保您已设置DASHSCOPE_API_KEY环境变量
 # export DASHSCOPE_API_KEY="your_api_key_here"
 if "DASHSCOPE_API_KEY" not in os.environ:
@@ -21,12 +25,10 @@ from langchain_community.embeddings.dashscope import DashScopeEmbeddings
 
 from evermind import MemoryManager, MnemonConfig, InProcessTaskQueue, MemoryMetadata
 
-API_KEY = "your-api-key"
-
 
 def run_example():
-    """运行一个完整的MNEMON SDK使用示例。"""
-    print("--- 欢迎来到 MNEMON SDK 示例 (适配通义千问和Neo4j) ---")
+    """运行一个完整的Evermind SDK使用示例。"""
+    print("--- 欢迎来到 Evermind SDK 示例 (适配通义千问和Neo4j) ---")
 
     # 1. 初始化依赖组件
     #    - LLM: 切换为通义千问大模型
@@ -38,10 +40,11 @@ def run_example():
     # 注意：您提到的 qwen3-235-nonthinking fp8 是一个非常新的模型，
     # 此处我们使用官方文档中稳定且强大的 qwen-max 模型作为示例。
     llm = ChatTongyi(
-        model="qwen3-235b-a22b-instruct-2507", temperature=0.7, api_key=API_KEY
+        model="qwen3-235b-a22b-instruct-2507",
+        temperature=0.7,
     )
     embedding_model = DashScopeEmbeddings(
-        model="text-embedding-v4", dashscope_api_key=API_KEY
+        model="text-embedding-v4",
     )
     placeholder_metadata = MemoryMetadata(source_type="system_placeholder").model_dump()
     vector_store = FAISS.from_texts(
@@ -94,7 +97,7 @@ def run_example():
     print("等待2秒以确保记忆处理完毕...")
     time.sleep(2)
 
-    # 4. 触发一次元认知反思，让MNEMON学习知识
+    # 4. 触发一次元认知反思，让Evermind学习知识
     print("\n[步骤 4] 正在手动触发一次元认知反思...")
     memory_manager.run_maintenance(run_reflection=True, run_health_check=False)
     print("元认知反思完成。现在知识图谱中应该有新的知识了。")
