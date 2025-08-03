@@ -1,3 +1,9 @@
+"""
+EverMind Data Models
+
+定义记忆系统的核心数据结构，支持多粒度索引和渐进式功能。
+"""
+
 import time
 import uuid
 from enum import Enum
@@ -5,132 +11,241 @@ from typing import Any, Dict, List, Optional, Union
 
 from pydantic import BaseModel, Field
 
-# --- Core Data Structures ---
-# 定义了我们记忆系统中流转的核心数据模型。
+
+# === 基础枚举类型 ===
 
 
 class MemoryStatus(str, Enum):
-    """
-    定义一个记忆记录的生命周期状态。
-    """
+    """记忆状态枚举"""
 
     ACTIVE = "active"
-    MERGED = "merged"
     ARCHIVED = "archived"
+    FORGOTTEN = "forgotten"
+
+
+class IndexType(str, Enum):
+    """索引类型枚举"""
+
+    CONCEPT = "concept"
+    QUESTION = "question"
+    SUMMARY = "summary"
+    CONTENT = "content"
+
+
+class ReasoningRelationType(str, Enum):
+    """推理关系类型枚举"""
+
+    CAUSES = "causes"
+    SUPPORTS = "supports"
+    CONTRADICTS = "contradicts"
+    SIMILAR_TO = "similar_to"
+
+
+# === 核心数据模型 ===
 
 
 class MemoryMetadata(BaseModel):
-    """
-    记忆的元数据，包含了所有用于RRIF模型评估和管理的信息。
-    """
+    """记忆元数据"""
 
-    source_type: str = Field(
-        description="记忆来源，例如：'user_chat', 'api_call', 'self_reflection'"
+    namespace: str = Field(description="命名空间/分片ID")
+    source_type: str = Field(description="记忆来源类型")
+    importance_score: float = Field(0.0, ge=0.0, le=4.0, description="重要性分数[0-4]")
+    access_count: int = Field(0, ge=0, description="访问次数")
+    status: MemoryStatus = Field(MemoryStatus.ACTIVE, description="记忆状态")
+
+    # 遗忘相关
+    last_accessed_at: float = Field(
+        default_factory=time.time, description="最后访问时间"
     )
-    interaction_id: Optional[str] = Field(None, description="关联的会话或任务ID")
-    importance_score: Optional[float] = Field(
-        0.0, description="[0.0, 4.0]，由LLM评估的重要性分数"
+    forgetting_probability: float = Field(0.0, ge=0.0, le=1.0, description="遗忘概率")
+
+    # 关联相关
+    associated_entities: List[str] = Field(
+        default_factory=list, description="关联实体列表"
     )
-    access_count: int = Field(0, description="记忆被访问的次数，用于计算Frequency")
-    status: MemoryStatus = Field(MemoryStatus.ACTIVE, description="记忆的当前状态")
-    is_compressed: bool = Field(False, description="内容字段是否被物理压缩")
-    archive_location: Optional[str] = Field(None, description="在冷存储中的路径或URI")
+    association_count: int = Field(0, ge=0, description="关联密度")
+
+    # 自定义数据
     custom_data: Dict[str, Any] = Field(
-        default_factory=dict, description="用户可自定义的额外数据"
+        default_factory=dict, description="自定义元数据"
     )
-    questions: List[str] = Field(
-        default_factory=list, description="从内容中抽取出的、可被回答的问题"
-    )
+
+
+class MultiGranularIndex(BaseModel):
+    """多粒度索引结构"""
+
+    concepts: List[str] = Field(default_factory=list, description="抽取的概念列表")
+    questions: List[str] = Field(default_factory=list, description="可回答的问题列表")
+    summary: Optional[str] = Field(None, description="内容摘要")
+    keywords: List[str] = Field(default_factory=list, description="关键词列表")
+
+
+class ReasoningChain(BaseModel):
+    """推理链节点"""
+
+    from_memory_id: str = Field(description="源记忆ID")
+    to_memory_id: str = Field(description="目标记忆ID")
+    relation_type: ReasoningRelationType = Field(description="关系类型")
+    confidence: float = Field(ge=0.0, le=1.0, description="置信度")
+    reasoning: str = Field(description="推理过程描述")
+    created_at: float = Field(default_factory=time.time, description="创建时间")
 
 
 class MemoryRecord(BaseModel):
-    """
-    表示一条完整的、可存储的记忆记录。
-    """
+    """完整的记忆记录"""
 
-    id: str = Field(
-        default_factory=lambda: str(uuid.uuid4()), description="记忆的唯一标识符"
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()), description="全局唯一ID")
+    content: str = Field(description="记忆内容")
+    content_embedding: Optional[List[float]] = Field(None, description="内容向量")
+    timestamp: float = Field(default_factory=time.time, description="创建时间戳")
+
+    # 元数据和索引
+    metadata: MemoryMetadata = Field(description="记忆元数据")
+    indexes: MultiGranularIndex = Field(
+        default_factory=MultiGranularIndex, description="多粒度索引"
     )
-    content: Union[str, bytes] = Field(
-        description="记忆的原始文本内容，或被压缩后的字节"
+
+    # 推理链（可选）
+    reasoning_chains: List[ReasoningChain] = Field(
+        default_factory=list, description="推理链列表"
     )
-    content_embedding: Optional[List[float]] = Field(
-        None, description="内容本身的向量表示"
-    )
-    timestamp: float = Field(
-        default_factory=time.time, description="记忆创建的Unix时间戳"
-    )
-    metadata: MemoryMetadata = Field(
-        default_factory=MemoryMetadata, description="记忆的元数据"
-    )
+
+    @property
+    def memory_id_with_namespace(self) -> str:
+        """返回带命名空间的完整ID"""
+        return f"{self.metadata.namespace}:{self.id}"
+
+    def update_access_info(self) -> None:
+        """更新访问信息"""
+        self.metadata.access_count += 1
+        self.metadata.last_accessed_at = time.time()
+
+
+class AssociationLink(BaseModel):
+    """实体关联链接"""
+
+    entity: str = Field(description="实体名称")
+    memory_ids: List[str] = Field(description="包含该实体的记忆ID列表")
+    co_occurrence_count: int = Field(0, description="共现次数")
+    strength: float = Field(0.0, ge=0.0, le=1.0, description="关联强度")
+
+
+# === 检索相关模型 ===
 
 
 class RetrievedMemory(BaseModel):
-    """
-    在查询过程中，被检索出的记忆及其相关信息。
-    """
+    """检索到的记忆"""
 
-    id: str
-    content: str
-    metadata: MemoryMetadata
-    score: float = Field(description="经过RRIF模型计算出的最终相关性得分")
-    type: str = Field(description="记忆类型，例如：'episodic', 'semantic'")
+    memory_record: MemoryRecord = Field(description="完整记忆记录")
+    relevance_score: float = Field(description="相关性分数")
+    recency_score: float = Field(description="时效性分数")
+    final_score: float = Field(description="最终RR综合分数")
+    match_type: IndexType = Field(description="匹配的索引类型")
+    match_content: str = Field(description="匹配的具体内容")
+
+
+class ContextHint(BaseModel):
+    """上下文引子/线索"""
+
+    type: IndexType = Field(description="引子类型")
+    content: str = Field(description="引子内容")
+    associated_memory_count: int = Field(description="关联记忆数量")
+    importance_level: str = Field(description="重要程度: high/medium/low")
 
 
 class QueryResult(BaseModel):
-    """
-    对`query`接口调用的最终返回结果。
-    """
+    """查询结果"""
 
-    synthesized_answer: Optional[str] = Field(
-        None, description="由LLM基于检索到的记忆合成的最终答案。如果未请求，则为None。"
-    )
-    retrieved_memories: List[RetrievedMemory] = Field(
-        description="用于生成答案的、经过RRIF排序的溯源记忆列表"
-    )
+    retrieved_memories: List[RetrievedMemory] = Field(description="检索到的记忆列表")
+    context_hints: List[ContextHint] = Field(description="生成的上下文引子")
+    total_matches: int = Field(description="总匹配数量")
+    processing_time_ms: float = Field(description="处理耗时(毫秒)")
 
 
-# --- LLM Structured Output Models ---
-# 定义了用于解析LLM结构化输出的Pydantic模型。
+# === LLM结构化输出模型 ===
 
 
 class ImportanceRating(BaseModel):
-    """用于解析LLM对记忆重要性评分的结构。"""
+    """重要性评分结果"""
 
-    score: float = Field(description="[0.0, 4.0] 范围内的重要性分数")
-    reason: str = Field(description="给出该分数的简要理由")
+    score: float = Field(ge=0.0, le=4.0, description="重要性分数[0-4]")
+    reasoning: str = Field(description="评分理由")
+    extracted_entities: List[str] = Field(
+        default_factory=list, description="抽取的实体"
+    )
+
+
+class ConceptExtraction(BaseModel):
+    """概念抽取结果"""
+
+    concepts: List[str] = Field(description="抽取的概念列表")
+    keywords: List[str] = Field(description="关键词列表")
+    entities: List[str] = Field(description="实体列表")
 
 
 class QuestionExtraction(BaseModel):
-    """用于解析LLM从文本中抽取出的问题的结构。"""
+    """问题抽取结果"""
 
-    questions: List[str] = Field(description="从文本中抽取的、可被回答的问题列表")
-
-
-class QueryPlan(BaseModel):
-    """用于解析LLM对用户查询的规划结果。"""
-
-    vector_search_query: str = Field(description="优化后的、用于向量搜索的查询语句")
-    requires_knowledge_graph: bool = Field(
-        description="判断本次查询是否需要查询知识图谱"
-    )
-    graph_query: Optional[str] = Field(
-        None, description="如果需要，生成的可在图数据库中执行的查询语句 (e.g., Cypher)"
-    )
+    questions: List[str] = Field(description="可回答的问题列表")
 
 
-class ReflectionResult(BaseModel):
-    """用于解析LLM对记忆簇进行反思的结果。"""
+class SummaryGeneration(BaseModel):
+    """摘要生成结果"""
 
-    insights: List[str] = Field(description="从记忆中提炼出的核心洞见或模式。")
-    new_knowledge_triplets: List[List[str]] = Field(
-        description="抽出的新知识三元组 (主体, 关系, 客体)。"
-    )
+    summary: str = Field(description="内容摘要")
+    key_points: List[str] = Field(description="关键要点")
 
 
-class FusedKnowledge(BaseModel):
-    """用于解析LLM对知识进行融合和归一的结果。"""
+class ReasoningExtraction(BaseModel):
+    """推理关系抽取结果"""
 
-    fused_triplets: List[List[str]] = Field(
-        description="经过融合与归一的、标准化的知识三元组。"
-    )
+    relations: List[Dict[str, str]] = Field(description="推理关系列表")
+    confidence: float = Field(description="整体置信度")
+
+
+# === 统计和监控模型 ===
+
+
+class MemoryStats(BaseModel):
+    """记忆统计信息"""
+
+    total_memories: int = Field(description="总记忆数")
+    active_memories: int = Field(description="活跃记忆数")
+    archived_memories: int = Field(description="归档记忆数")
+    forgotten_memories: int = Field(description="已遗忘记忆数")
+
+    avg_importance_score: float = Field(description="平均重要性分数")
+    avg_access_count: float = Field(description="平均访问次数")
+    total_associations: int = Field(description="总关联数")
+
+    storage_size_mb: float = Field(description="存储大小(MB)")
+    index_size_mb: float = Field(description="索引大小(MB)")
+
+
+class PerformanceMetrics(BaseModel):
+    """性能指标"""
+
+    avg_retrieval_time_ms: float = Field(description="平均检索时间(毫秒)")
+    avg_indexing_time_ms: float = Field(description="平均索引时间(毫秒)")
+    avg_context_generation_time_ms: float = Field(description="平均引子生成时间(毫秒)")
+
+    cache_hit_rate: float = Field(description="缓存命中率")
+    memory_usage_mb: float = Field(description="内存使用(MB)")
+
+    last_updated: float = Field(default_factory=time.time, description="最后更新时间")
+
+
+# === 配置相关模型 ===
+
+
+class NamespaceConfig(BaseModel):
+    """命名空间配置"""
+
+    namespace: str = Field(description="命名空间名称")
+    description: str = Field(description="命名空间描述")
+    max_memories: int = Field(100000, description="最大记忆数量")
+    retention_days: int = Field(365, description="保留天数")
+    enable_cross_query: bool = Field(False, description="是否允许跨空间查询")
+
+    created_at: float = Field(default_factory=time.time, description="创建时间")
+    last_accessed: float = Field(default_factory=time.time, description="最后访问时间")

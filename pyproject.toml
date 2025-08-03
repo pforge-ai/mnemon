@@ -1,35 +1,151 @@
 [tool.poetry]
 name = "evermind"
-version = "0.1.0"
-description = "为智能体打造的“神级记忆装备”，一个可实现永久存活与自我进化的认知核心。"
-authors = ["AlbertCui <albertzhouzhou@gmail.com>", "Gemini"]
+version = "0.2.0"
+description = "渐进式智能记忆系统 - 为智能体打造的神级记忆装备，支持多粒度索引、RR权重检索和上下文引子生成"
+authors = ["Albert Cui <albertzhouzhou@gmail.com>"]
 readme = "README.md"
 license = "Apache-2.0"
 repository = "https://github.com/pforge-ai/evermind"
+keywords = ["ai", "memory", "retrieval", "rag", "agent", "llm"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: Apache Software License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
 
 [tool.poetry.dependencies]
 python = "^3.9"
 
-# LangChain 核心抽象层
-langchain-core = "^0.2.1"
-langchain-community = "^0.2.1"
+# 核心依赖 - 稳定版本组合
+pydantic = "^2.7.0"
+langchain-core = ">=0.2.26,<0.3.0"
+langchain-community = ">=0.2.10,<0.3.0"
 
-# 配置管理
-pydantic = "^2.7.1"
+# 向量存储
+qdrant-client = "^1.9.0"
+langchain-qdrant = "^0.1.3"
 
-# 科学计算基础，许多向量库的依赖
-numpy = "^1.26.4"
+# 科学计算
+numpy = "^1.24.0"
 
-# 默认开箱即用的依赖，方便快速启动和测试
-langchain-openai = "^0.1.7"  # 默认的 LLM 实现
-faiss-cpu = "^1.8.0"         # 默认的、强大的内存向量库
-tiktoken = "^0.7.0"          # OpenAI Tokenizer
+# 主要LLM提供商（兼容版本）
+langchain-openai = { version = ">=0.1.19,<0.2.0", optional = true }
+
+# 可选的embedding模型
+sentence-transformers = { version = "^3.0.0", optional = true }
 
 [tool.poetry.group.dev.dependencies]
-pytest = "^8.2.0"   # 测试框架
-black = "^24.4.2"   # 代码格式化工具
-ruff = "^0.4.4"     # 高性能 Linter
+# 测试框架
+pytest = "^7.4.0"
+pytest-asyncio = "^0.21.0"
+pytest-cov = "^4.1.0"
+
+# 代码质量
+black = "^23.7.0"
+isort = "^5.12.0"
+flake8 = "^6.0.0"
+mypy = "^1.5.0"
+
+# 文档
+mkdocs = "^1.5.0"
+mkdocs-material = "^9.1.0"
+
+# 开发工具
+pre-commit = "^3.3.0"
+jupyterlab = "^4.0.0"
+
+[tool.poetry.extras]
+openai = ["langchain-openai"]
+anthropic = ["langchain-anthropic"]
+dashscope = ["dashscope"]
+local-embeddings = ["sentence-transformers"]
+all = [
+    "langchain-openai",
+    "langchain-anthropic",
+    "dashscope",
+    "sentence-transformers",
+]
 
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.black]
+line-length = 100
+target-version = ['py39', 'py310', 'py311']
+include = '\.pyi?$'
+extend-exclude = '''
+/(
+  # directories
+  \.eggs
+  | \.git
+  | \.hg
+  | \.mypy_cache
+  | \.tox
+  | \.venv
+  | build
+  | dist
+)/
+'''
+
+[tool.isort]
+profile = "black"
+line_length = 100
+multi_line_output = 3
+include_trailing_comma = true
+force_grid_wrap = 0
+use_parentheses = true
+ensure_newline_before_comments = true
+
+[tool.mypy]
+python_version = "3.9"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+check_untyped_defs = true
+disallow_untyped_decorators = true
+no_implicit_optional = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+warn_no_return = true
+warn_unreachable = true
+strict_equality = true
+
+[[tool.mypy.overrides]]
+module = ["qdrant_client.*", "langchain_qdrant.*", "sentence_transformers.*"]
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+minversion = "6.0"
+addopts = "-ra -q --strict-markers --strict-config"
+testpaths = ["tests"]
+asyncio_mode = "auto"
+markers = [
+    "slow: marks tests as slow (deselect with '-m \"not slow\"')",
+    "integration: marks tests as integration tests",
+    "unit: marks tests as unit tests",
+]
+
+[tool.coverage.run]
+source = ["evermind"]
+omit = ["*/tests/*", "*/test_*", "examples/*"]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "if self.debug:",
+    "if settings.DEBUG",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "if 0:",
+    "if __name__ == .__main__.:",
+    "class .*\\bProtocol\\):",
+    "@(abc\\.)?abstractmethod",
+]
