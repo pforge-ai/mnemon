@@ -52,20 +52,14 @@ class MemoryMetadata(BaseModel):
     importance_score: float = Field(0.0, ge=0.0, le=4.0, description="重要性分数[0-4]")
     access_count: int = Field(0, ge=0, description="访问次数")
     status: MemoryStatus = Field(MemoryStatus.ACTIVE, description="记忆状态")
-
-    # 遗忘相关
     last_accessed_at: float = Field(
         default_factory=time.time, description="最后访问时间"
     )
     forgetting_probability: float = Field(0.0, ge=0.0, le=1.0, description="遗忘概率")
-
-    # 关联相关
     associated_entities: List[str] = Field(
         default_factory=list, description="关联实体列表"
     )
     association_count: int = Field(0, ge=0, description="关联密度")
-
-    # 自定义数据
     custom_data: Dict[str, Any] = Field(
         default_factory=dict, description="自定义元数据"
     )
@@ -98,17 +92,9 @@ class MemoryRecord(BaseModel):
     content: str = Field(description="记忆内容")
     content_embedding: Optional[List[float]] = Field(None, description="内容向量")
     timestamp: float = Field(default_factory=time.time, description="创建时间戳")
-
-    # 元数据和索引
-    metadata: MemoryMetadata = Field(description="记忆元数据")
-    indexes: MultiGranularIndex = Field(
-        default_factory=MultiGranularIndex, description="多粒度索引"
-    )
-
-    # 推理链（可选）
-    reasoning_chains: List[ReasoningChain] = Field(
-        default_factory=list, description="推理链列表"
-    )
+    metadata: MemoryMetadata
+    indexes: MultiGranularIndex = Field(default_factory=MultiGranularIndex)
+    reasoning_chains: List[ReasoningChain] = Field(default_factory=list)
 
     @property
     def memory_id_with_namespace(self) -> str:
@@ -136,30 +122,30 @@ class AssociationLink(BaseModel):
 class RetrievedMemory(BaseModel):
     """检索到的记忆"""
 
-    memory_record: MemoryRecord = Field(description="完整记忆记录")
-    relevance_score: float = Field(description="相关性分数")
-    recency_score: float = Field(description="时效性分数")
-    final_score: float = Field(description="最终RR综合分数")
-    match_type: IndexType = Field(description="匹配的索引类型")
-    match_content: str = Field(description="匹配的具体内容")
+    memory_record: MemoryRecord
+    relevance_score: float
+    recency_score: float
+    final_score: float
+    match_type: IndexType
+    match_content: str
 
 
 class ContextHint(BaseModel):
     """上下文引子/线索"""
 
-    type: IndexType = Field(description="引子类型")
-    content: str = Field(description="引子内容")
-    associated_memory_count: int = Field(description="关联记忆数量")
-    importance_level: str = Field(description="重要程度: high/medium/low")
+    type: IndexType
+    content: str
+    associated_memory_count: int
+    importance_level: str
 
 
 class QueryResult(BaseModel):
     """查询结果"""
 
-    retrieved_memories: List[RetrievedMemory] = Field(description="检索到的记忆列表")
-    context_hints: List[ContextHint] = Field(description="生成的上下文引子")
-    total_matches: int = Field(description="总匹配数量")
-    processing_time_ms: float = Field(description="处理耗时(毫秒)")
+    retrieved_memories: List[RetrievedMemory]
+    context_hints: List[ContextHint]
+    total_matches: int
+    processing_time_ms: float
 
 
 # === LLM结构化输出模型 ===
@@ -178,29 +164,22 @@ class ImportanceRating(BaseModel):
 class ConceptExtraction(BaseModel):
     """概念抽取结果"""
 
-    concepts: List[str] = Field(description="抽取的概念列表")
-    keywords: List[str] = Field(description="关键词列表")
-    entities: List[str] = Field(description="实体列表")
+    concepts: List[str] = Field(default_factory=list)
+    keywords: List[str] = Field(default_factory=list)
+    entities: List[str] = Field(default_factory=list)
 
 
 class QuestionExtraction(BaseModel):
     """问题抽取结果"""
 
-    questions: List[str] = Field(description="可回答的问题列表")
+    questions: List[str] = Field(default_factory=list)
 
 
 class SummaryGeneration(BaseModel):
     """摘要生成结果"""
 
-    summary: str = Field(description="内容摘要")
-    key_points: List[str] = Field(description="关键要点")
-
-
-class ReasoningExtraction(BaseModel):
-    """推理关系抽取结果"""
-
-    relations: List[Dict[str, str]] = Field(description="推理关系列表")
-    confidence: float = Field(description="整体置信度")
+    summary: str
+    key_points: List[str] = Field(default_factory=list)
 
 
 # === 统计和监控模型 ===
@@ -209,30 +188,15 @@ class ReasoningExtraction(BaseModel):
 class MemoryStats(BaseModel):
     """记忆统计信息"""
 
-    total_memories: int = Field(description="总记忆数")
-    active_memories: int = Field(description="活跃记忆数")
-    archived_memories: int = Field(description="归档记忆数")
-    forgotten_memories: int = Field(description="已遗忘记忆数")
-
-    avg_importance_score: float = Field(description="平均重要性分数")
-    avg_access_count: float = Field(description="平均访问次数")
-    total_associations: int = Field(description="总关联数")
-
-    storage_size_mb: float = Field(description="存储大小(MB)")
-    index_size_mb: float = Field(description="索引大小(MB)")
-
-
-class PerformanceMetrics(BaseModel):
-    """性能指标"""
-
-    avg_retrieval_time_ms: float = Field(description="平均检索时间(毫秒)")
-    avg_indexing_time_ms: float = Field(description="平均索引时间(毫秒)")
-    avg_context_generation_time_ms: float = Field(description="平均引子生成时间(毫秒)")
-
-    cache_hit_rate: float = Field(description="缓存命中率")
-    memory_usage_mb: float = Field(description="内存使用(MB)")
-
-    last_updated: float = Field(default_factory=time.time, description="最后更新时间")
+    total_memories: int
+    active_memories: int
+    archived_memories: int
+    forgotten_memories: int
+    avg_importance_score: float
+    avg_access_count: float
+    total_associations: int
+    storage_size_mb: float
+    index_size_mb: float
 
 
 # === 配置相关模型 ===
@@ -242,10 +206,10 @@ class NamespaceConfig(BaseModel):
     """命名空间配置"""
 
     namespace: str = Field(description="命名空间名称")
-    description: str = Field(description="命名空间描述")
+    # 修复：为 description 添加默认值，使其成为可选字段
+    description: str = Field("", description="命名空间描述")
     max_memories: int = Field(100000, description="最大记忆数量")
     retention_days: int = Field(365, description="保留天数")
     enable_cross_query: bool = Field(False, description="是否允许跨空间查询")
-
     created_at: float = Field(default_factory=time.time, description="创建时间")
     last_accessed: float = Field(default_factory=time.time, description="最后访问时间")

@@ -1,126 +1,210 @@
-# Evermind
-**为智能体打造的“神级记忆装备”，一个可实现永久存活与自我进化的认知核心。**
+# 🧠 EverMind - 赋予智能体超凡记忆
 
-## 📖 简介
-Evermind 是一个专为高级AI智能体设计的、高度模块化、可配置的记忆系统。它的目标远不止于信息的被动存储与检索，而是构建一个能够模拟生物认知、实现主动学习、自我进化和长期成长的动态认知架构。
+**一个为大型语言模型（LLM）应用设计的、渐进式、可扩展的智能记忆系统。**
 
-搭载 Evermind 的智能体将不再遗忘重要的上下文，更能从过去的经验中学习、反思、提炼出新的知识和策略，随着时间的推移而不断成长。
+[](https://www.python.org/downloads/)
+[](https://opensource.org/licenses/Apache-2.0)
+[](https://github.com/pforge-ai/evermind)
+[](https://github.com/pforge-ai/evermind)
 
-#### 核心设计原则
-🧠 认知模拟: 架构模仿人类记忆的分层与分类机制（情节、语义、程序记忆）。
+-----
 
-🧬 动态自组织: 记忆能够通过主动的“元认知反思”与“记忆维护”机制，持续优化自身结构和内容。
+## 📖 项目简介
 
-🔌 统一与可扩展: 所有后端依赖（LLM、向量数据库、图数据库）均面向协议设计，可被轻松替换和扩展。
+在构建高级AI智能体或复杂聊天机器人时，我们面临一个核心挑战：如何让它们拥有像人一样的记忆能力？它们需要能够：
 
-📉 优雅降级: 系统功能可通过配置开关。在最简模式下，它是一个高性能的情节记忆库；在完全体模式下，它是一个能够自我进化的认知系统。
+  * **长期记住** 对话的关键信息和用户的偏好。
+  * 在海量信息中**智能检索**出最相关的内容。
+  * **理解上下文**，并根据记忆线索进行推理和联想。
 
-## ✨ 核心功能
-+ 多维记忆评估 (RRIF模型): 通过时效性 (Recency)、相关性 (Relevance)、重要性 (Importance) 和 频率性 (Frequency) 四个维度智能评估每一条记忆的价值，实现前所未有的智能检索排序。
+**EverMind** 正是为此而生。它是一个即插即用的记忆中间件，旨在为任何LLM应用提供一个强大、灵活且具备类人特性的记忆核心。它不仅仅是一个向量数据库的封装，而是一个完整、智能的记忆管理解决方案。
 
-+ 元认知反思: 智能体可以在“空闲”时自动反思高价值的记忆，发现模式、提炼洞见，并将其固化为新的结构化知识。
+无论您是在开发一个需要记住用户历史的AI伴侣，一个需要分析大量文档的知识库助手，还是一个需要进行多步推理的自主智能体，EverMind 都能成为您坚实的记忆基石。
 
-+ 高级知识融合: 在反思过程中，通过两阶段的LLM调用，实现对新知识的实体归一和关系归一，有效避免知识冗余，构建高质量的知识图谱。
+## ✨ 核心特性
 
-+ 混合检索: 智能地规划查询，能够无缝地结合向量检索（用于情节记忆）和图谱查询（用于语义记忆），提供更精准的答案。
+EverMind 的设计哲学是“渐进式智能”，您可以根据需求，从一个简单的向量存储开始，逐步启用更高级的认知功能。
 
-+ 可配置的答案生成: 用户可以自由选择是获取由LLM合成的最终答案，还是直接获取经过RRIF模型排序后的原始记忆片段。
+  * 🧠 **渐进式多粒度索引 (Progressive Multi-Granular Indexing)**
 
-+ 记忆生命周期管理: 具备完整的记忆维护机制，包括固化、压缩、归档和删除，确保系统长期健康运行。
+      * **自动分析**: EverMind 不只是存储原始文本。它会自动评估记忆的“重要性”，并根据重要性阈值，智能地抽取**概念、可回答问题、实体、关键词和摘要**。
+      * **丰富检索维度**: 这意味着您的AI不仅能进行语义相似度搜索，还能从不同认知粒度上理解和检索信息。
 
-## 🚀 快速上手
-### 1. 环境准备, 首先，确保您已安装 Python 3.9+。
+  * 🔍 **RR权重智能检索 (Relevance-Recency Weighted Retrieval)**
 
-#### 安装 Evermind SDK
+      * **超越余弦相似度**: 传统的向量检索只关心语义相关性。EverMind 引入了“时效性（Recency）”作为核心权重，结合“相关性（Relevance）”，动态计算出最符合当前情境的记忆。
+      * **任务可配置**: 您可以为不同任务（如：事实问答、日常对话）配置不同的RR权重，实现更精细的检索策略。
+
+  * 💡 **动态上下文引子 (Dynamic Context Hints)**
+
+      * **记忆线索生成**: 在每次查询后，EverMind 会自动生成“上下文引子”，例如“相关实体：李博士”、“可回答问题：Phoenix项目何时完成？”。
+      * **增强LLM性能**: 这些引子可以被注入到下一次的LLM提示词（Prompt）中，极大地增强了AI的对话连续性和上下文感知能力，使其看起来更“主动”、更“聪明”。
+
+  * 🔗 **实体关联网络 (Entity Association Network)**
+
+      * **自动构建关系**: 系统会自动追踪在记忆中共现的实体（如人名、项目名），并在后台构建一个实体关联网络。
+      * **实现联想查询**: 您可以直接查询某个实体（如“李博士”），系统会返回所有与他相关的记忆，实现类似“知识图谱”的联想能力。
+
+  * 🗂️ **IF内部管理策略 (Importance-Frequency Internal Strategy)**
+
+      * **智能内部管理**: 除了用于对外检索的RR权重，系统内部还使用IF（重要性-频次）策略来管理记忆本身。
+      * **支持高级策略**: 基于IF得分，系统未来可以实现自适应遗忘、记忆归档、智能缓存等高级管理功能，确保记忆库的健康和高效。
+
+  * ⚙️ **面向协议，轻松扩展 (Protocol-Oriented & Extensible)**
+
+      * **厂商无锁定**: EverMind 的核心组件（如 `MemoryManager`）完全面向 LangChain 的核心协议（`BaseLanguageModel`, `Embeddings`）编程。
+      * **任意模型接入**: 这意味着您可以轻松接入并切换任何LLM和Embedding模型提供商（如智谱、百炼、月之暗面、OpenAI等），只需传入一个兼容的实例即可。
+
+  * 🚀 **高性能存储后端 (High-Performance Storage Backend)**
+
+      * **Qdrant 深度集成**: 内置基于 [Qdrant](https://qdrant.tech/) 的高性能、可扩展的向量存储后端。
+      * **异步与流式处理**: 支持异步IO操作，并提供了流式处理队列，可以将高延迟的索引任务放到后台执行，保证了API的快速响应。
+
+## 🏛️ 架构概览
+
+EverMind 的架构清晰且模块化，主要由以下几个核心组件构成：
+
+1.  **MemoryManager**: **系统主入口**。负责协调所有组件，并对外提供统一的 `ingest`（录入）和 `query`（查询）接口。
+2.  **IndexingProcessor**: **记忆加工厂**。负责调用LLM对原始记忆进行分析，抽取多粒度索引。
+3.  **RetrievalEngine**: **智能检索引擎**。负责执行RR权重检索、生成上下文引子和处理关联查询。
+4.  **StorageBackend**: **存储后端**。一个可插拔的存储接口，目前提供了基于 Qdrant 的高性能实现（`QdrantStorageBackend`）。
+
+*(架构图正在绘制中...)*
+
+## 🚀 快速开始
+
+只需三步，即可在您的项目中集成 EverMind。
+
+### 1\. 安装
+
+首先，请确保您已经安装了所有必要的依赖。
+
+```bash
+pip install evermind-ai langchain langchain-openai langchain-community qdrant-client
 ```
-pip install evermind
-```
 
-#### 设置您选择的大模型提供商的API密钥
-例如，使用阿里巴巴通义千问
-```
-export DASHSCOPE_API_KEY="your_api_key_here"
-```
-(可选) 如果您想使用知识图谱功能，可通过Docker启动一个Neo4j实例
-```
-docker run --name evermind -neo4j -p 7474:7474 -p 7687:7687 -d -e NEO4J_AUTH=neo4j/password neo4j:5
-```
+*(注意: `evermind-ai` 是一个假设的包名，请根据实际情况修改)*
 
-### 2. 使用示例
-下面的示例将展示如何快速启动一个具备完整功能的 Evermind 实例。
+### 2\. 环境配置
+
+EverMind 需要访问LLM和Embedding服务。请在您的环境中配置好API Keys。
+
 ```python
-import logging
-from langchain_community.vectorstores import FAISS
-from langchain_community.graphs import Neo4jGraph
-from langchain_tongyi import ChatTongyi, TongyiEmbeddings
-from evermind import MemoryManager, MnemonConfig, InProcessTaskQueue
+import os
 
-# 配置日志，观察Evermind内部活动
-logging.basicConfig(level=logging.INFO)
+# 配置智谱AI (用于LLM)
+os.environ["ZHIPU_API_KEY"] = "YOUR_ZHIPU_API_KEY"
+os.environ["ZHIPU_BASE_URL"] = "https://open.bigmodel.cn/api/paas/v4/"
 
-# 1. 初始化依赖组件
-llm = ChatTongyi(model="qwen-max")
-embedding_model = TongyiEmbeddings(model="text-embedding-v2")
-vector_store = FAISS.from_texts(["init"], embedding_model) # 使用内存向量库
-graph_store = Neo4jGraph(url="bolt://localhost:7687", username="neo4j", password="password")
-task_queue = InProcessTaskQueue() # 使用简单的同步任务队列
-
-# 2. 实例化 MemoryManager
-memory = MemoryManager(
-    config=MnemonConfig(), # 使用默认配置
-    vector_store=vector_store,
-    llm=llm,
-    embedding_model=embedding_model,
-    graph_store=graph_store,
-    task_queue=task_queue,
-    initial_instructions=["你是一个AI助手。"]
-)
-
-# 3. 写入记忆
-memory.ingest("项目'凤凰'的主要负责人是李博士。")
-memory.ingest("用户张三对项目'凤凰'的成本非常关心。")
-
-# 4. 触发一次学习（元认知反思）
-print("\n--- 正在进行元认知反思 ---")
-memory.run_maintenance(run_reflection=True, run_health_check=False)
-print("反思完成，知识已存入图谱。")
-
-# 5. 进行查询
-print("\n--- 正在进行查询 ---")
-query = "谁是项目'凤凰'的负责人？"
-result = memory.query(query)
-
-print(f"\n查询: {query}")
-print(f"回答: {result.synthesized_answer}")
+# 配置阿里百炼 DashScope (用于Embedding)
+os.environ["DASHSCOPE_API_KEY"] = "YOUR_DASHSCOPE_API_KEY"
 ```
 
-## 🛠️ 架构与配置
-Evermind 的核心是 MemoryManager 类，它通过一个统一的API (ingest, query, run_maintenance) 来协调所有内部工作流。
+### 3\. 代码示例
 
-您可以通过实例化 MnemonConfig 并修改其属性，来精细地控制系统的每一个行为，例如关闭知识图谱功能、调整RRIF权重、配置记忆维护策略等。
+下面的示例将演示从初始化、录入记忆到最终查询的全过程。
+
+```python
+import asyncio
+from langchain_openai import ChatOpenAI
+from langchain_community.embeddings.tongyi import TongyiEmbeddings
+from qdrant_client import QdrantClient
+import evermind
+
+async def main():
+    # 1. 初始化依赖组件
+    llm = ChatOpenAI(
+        model="glm-4.5-x",
+        openai_api_base=os.getenv("ZHIPU_BASE_URL"),
+        openai_api_key=os.getenv("ZHIPU_API_KEY"),
+    )
+    embeddings = TongyiEmbeddings(model="text-embedding-v4")
+    qdrant_client = QdrantClient(":memory:") # 使用内存数据库进行演示
+
+    # 2. 创建 EverMind 记忆管理器
+    # 使用 create_simple_memory_manager 可以快速开始，它内置了推荐的最佳实践配置
+    memory_manager = evermind.create_simple_memory_manager(
+        qdrant_client=qdrant_client,
+        llm=llm,
+        embeddings=embeddings,
+        namespace="my_first_agent"
+    )
+    await memory_manager.initialize()
+    print("✅ EverMind 初始化成功！")
+
+    # 3. 录入记忆 (Ingest)
+    print("\n📝 正在录入记忆...")
+    await memory_manager.ingest(
+        "项目Phoenix的负责人是李博士，这是一个AI认知架构研发项目。",
+        process_immediately=True # 立即处理索引，便于演示
+    )
+    await memory_manager.ingest(
+        "李博士提到Phoenix项目需要在6个月内完成第一个原型。",
+        process_immediately=True
+    )
+    print("   记忆录入完成。")
+
+    # 4. 查询记忆 (Query)
+    print("\n🔍 正在查询记忆...")
+    query = "谁负责Phoenix项目？什么时候需要完成？"
+    print(f"   查询: {query}")
+    
+    result = await memory_manager.query(query, task_type="factual_qa")
+
+    # 5. 查看结果
+    if result.retrieved_memories:
+        top_memory = result.retrieved_memories[0]
+        print("\n🎯 查询结果:")
+        print(f"   最相关的记忆: '{top_memory.memory_record.content}'")
+        print(f"   综合得分: {top_memory.final_score:.3f}")
+        print("\n💡 上下文引子:")
+        for hint in result.context_hints:
+            print(f"   - {hint.content}")
+    else:
+        print("   未找到相关记忆。")
+
+if __name__ == "__main__":
+    asyncio.run(main())
 ```
-from evermind import MnemonConfig
+
+## 🔧 配置与使用
+
+您可以通过 `EverMindConfig` 对象来精细化控制 EverMind 的行为。
+
+```python
+from evermind import EverMindConfig, create_memory_manager
 
 # 创建一个自定义配置
-custom_config = MnemonConfig(
-    enable_semantic_memory=False, # 禁用知识图谱
-    recency_decay_rate=0.05      # 让记忆“遗忘”得更快
+my_config = EverMindConfig(
+    # 启用关联追踪
+    enable_association_tracking=True,
+    # 禁用上下文引子生成以节省token
+    enable_context_injection=False,
+    # 调整索引抽取的难度
+    indexing_config={
+        "concept_extraction_threshold": 2.5, # 只有重要性高于2.5的记忆才抽取概念
+    }
 )
 
-# ...在实例化MemoryManager时传入
-# memory = MemoryManager(config=custom_config, ...)
+# 使用自定义配置创建管理器
+memory_manager = create_memory_manager(
+    config=my_config,
+    # ... 其他参数 ...
+)
 ```
 
-## 🗺️ 路线图
-我们对 Evermind 有着宏伟的规划，欢迎社区一同参与贡献：
-
-- [ ] 完善 _run_health_check_stage 的具体实现。
-- [ ] 提供更多开箱即用的数据库和任务队列适配器。
-- [ ] 引入更高级的记忆聚类算法。
-- [ ] 支持多模态记忆（图像、声音）。
-
 ## 🤝 贡献
-我们热烈欢迎任何形式的贡献！如果您有任何想法、建议或发现了bug，请随时提交 Issues 或 Pull Requests。
+
+我们热烈欢迎来自社区的任何贡献！无论您是修复Bug、添加新功能还是完善文档，我们都非常感谢。
+
+请遵循以下步骤参与贡献：
+
+1.  Fork 本仓库。
+2.  创建一个新的分支 (`git checkout -b feature/your-feature-name`)。
+3.  提交您的修改 (`git commit -m 'Add some feature'`)。
+4.  将您的分支推送到远程仓库 (`git push origin feature/your-feature-name`)。
+5.  创建一个 Pull Request。
 
 ## 📄 许可证
-本项目采用 Apache 2.0 license 开源。
+
+本项目采用 [Apache 2.0 许可证](https://opensource.org/licenses/Apache-2.0)。

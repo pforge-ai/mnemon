@@ -12,13 +12,13 @@ from langchain_core.prompts import PromptTemplate
 
 from ..models import (
     MemoryRecord,
-    MultiGranularIndex,
     ImportanceRating,
     ConceptExtraction,
     QuestionExtraction,
     SummaryGeneration,
 )
 from ..config import EverMindConfig
+from ..storage.protocols import IStorageBackend
 
 
 class IndexingProcessor:
@@ -27,35 +27,20 @@ class IndexingProcessor:
     def __init__(self, llm: BaseLanguageModel, config: EverMindConfig):
         self.llm = llm
         self.config = config
-
-        # 初始化解析器
         self._importance_parser = PydanticOutputParser(pydantic_object=ImportanceRating)
         self._concept_parser = PydanticOutputParser(pydantic_object=ConceptExtraction)
         self._question_parser = PydanticOutputParser(pydantic_object=QuestionExtraction)
         self._summary_parser = PydanticOutputParser(pydantic_object=SummaryGeneration)
-
-        # 初始化提示模板
         self._setup_prompts()
 
     def _setup_prompts(self):
         """设置LLM提示模板"""
-
-        # 重要性评估提示
         self._importance_prompt = PromptTemplate(
             template="""
             作为一个智能记忆系统，请评估以下内容的重要性级别。
-
-            评分标准：
-            - 0分：日常闲聊、无意义信息
-            - 1分：一般事实、常识性信息  
-            - 2分：有用的具体信息、技能知识
-            - 3分：重要洞察、关键决策、核心原则
-            - 4分：系统性指令、基础设定、不可变规则
-
-            同时请抽取内容中的关键实体（人名、地名、项目名、概念名等）。
-
+            评分标准：0分（日常闲聊），1分（一般事实），2分（有用信息），3分（重要洞察），4分（核心规则）。
+            同时请抽取内容中的关键实体。
             {format_instructions}
-
             内容："{content}"
             """,
             input_variables=["content"],
@@ -63,21 +48,11 @@ class IndexingProcessor:
                 "format_instructions": self._importance_parser.get_format_instructions()
             },
         )
-
-        # 概念抽取提示
         self._concept_prompt = PromptTemplate(
             template="""
             从以下内容中抽取关键概念、实体和关键词。
-
-            要求：
-            - 概念：抽象的概念、理论、方法论
-            - 实体：具体的人、地、物、组织
-            - 关键词：重要的描述词、动作词
-
-            保持简洁，每类最多{max_concepts}个。
-
+            要求：概念是抽象理论，实体是具体人/物，关键词是重要描述词。每类最多{max_concepts}个。
             {format_instructions}
-
             内容："{content}"
             """,
             input_variables=["content", "max_concepts"],
@@ -85,20 +60,10 @@ class IndexingProcessor:
                 "format_instructions": self._concept_parser.get_format_instructions()
             },
         )
-
-        # 问题抽取提示
         self._question_prompt = PromptTemplate(
             template="""
-            基于以下内容，生成这段内容能够直接回答的问题。
-
-            要求：
-            - 问题应该具体、明确
-            - 内容必须能完整回答该问题
-            - 优先生成事实性问题
-            - 最多生成{max_questions}个问题
-
+            基于以下内容，生成这段内容能够直接回答的问题。最多{max_questions}个。
             {format_instructions}
-
             内容："{content}"
             """,
             input_variables=["content", "max_questions"],
@@ -106,19 +71,10 @@ class IndexingProcessor:
                 "format_instructions": self._question_parser.get_format_instructions()
             },
         )
-
-        # 摘要生成提示
         self._summary_prompt = PromptTemplate(
             template="""
-            为以下内容生成简洁的摘要和关键要点。
-
-            要求：
-            - 摘要控制在1-2句话内
-            - 关键要点用简短的词组表达
-            - 保留最重要的信息
-
+            为以下内容生成1-2句话的简洁摘要和关键要点。
             {format_instructions}
-
             内容："{content}"
             """,
             input_variables=["content"],
@@ -129,176 +85,58 @@ class IndexingProcessor:
 
     async def process_memory(self, memory: MemoryRecord) -> MemoryRecord:
         """处理单条记忆，生成完整的多粒度索引"""
-
-        # 1. 评估重要性（总是执行）
         importance_result = await self._assess_importance(memory.content)
         memory.metadata.importance_score = importance_result.score
         memory.metadata.associated_entities = importance_result.extracted_entities
 
-        # 2. 根据配置和重要性阈值决定是否进行进一步索引
-        indexing_config = self.config.indexing_config
+        cfg = self.config.indexing_config
+        tasks = []
 
-        # 概念抽取
         if (
-            indexing_config.enable_concept_extraction
-            and memory.metadata.importance_score
-            >= indexing_config.concept_extraction_threshold
+            cfg.enable_concept_extraction
+            and importance_result.score >= cfg.concept_extraction_threshold
         ):
-            concept_result = await self._extract_concepts(memory.content)
-            memory.indexes.concepts = concept_result.concepts[
-                : indexing_config.max_concepts_per_memory
+            tasks.append(self._extract_concepts(memory.content))
+        else:
+            tasks.append(asyncio.sleep(0, result=None))
+
+        if (
+            cfg.enable_question_extraction
+            and importance_result.score >= cfg.question_extraction_threshold
+        ):
+            tasks.append(self._extract_questions(memory.content))
+        else:
+            tasks.append(asyncio.sleep(0, result=None))
+
+        if cfg.enable_summary_generation:
+            tasks.append(self._generate_summary(memory.content))
+        else:
+            tasks.append(asyncio.sleep(0, result=None))
+
+        concept_res, question_res, summary_res = await asyncio.gather(*tasks)
+
+        if concept_res:
+            memory.indexes.concepts = concept_res.concepts[
+                : cfg.max_concepts_per_memory
             ]
-            memory.indexes.keywords = concept_result.keywords
-            # 合并实体到关联实体中
-            memory.metadata.associated_entities.extend(concept_result.entities)
+            memory.indexes.keywords = concept_res.keywords
             memory.metadata.associated_entities = list(
-                set(memory.metadata.associated_entities)
+                set(memory.metadata.associated_entities + concept_res.entities)
             )
-
-        # 问题抽取
-        if (
-            indexing_config.enable_question_extraction
-            and memory.metadata.importance_score
-            >= indexing_config.question_extraction_threshold
-        ):
-            question_result = await self._extract_questions(memory.content)
-            memory.indexes.questions = question_result.questions[
-                : indexing_config.max_questions_per_memory
+        if question_res:
+            memory.indexes.questions = question_res.questions[
+                : cfg.max_questions_per_memory
             ]
-
-        # 摘要生成
-        if indexing_config.enable_summary_generation:
-            summary_result = await self._generate_summary(memory.content)
-            memory.indexes.summary = summary_result.summary
-
-        return memory
-
-    async def batch_process_memories(
-        self, memories: List[MemoryRecord]
-    ) -> List[MemoryRecord]:
-        """批量处理记忆"""
-        # 并发处理，但限制并发数避免过载
-        semaphore = asyncio.Semaphore(5)  # 最多5个并发
-
-        async def process_with_semaphore(memory):
-            async with semaphore:
-                return await self.process_memory(memory)
-
-        tasks = [process_with_semaphore(memory) for memory in memories]
-        processed_memories = await asyncio.gather(*tasks, return_exceptions=True)
-
-        # 过滤异常结果
-        results = []
-        for i, result in enumerate(processed_memories):
-            if isinstance(result, Exception):
-                print(f"Error processing memory {memories[i].id}: {result}")
-                results.append(memories[i])  # 返回原始记忆
-            else:
-                results.append(result)
-
-        return results
-
-    async def _assess_importance(self, content: str) -> ImportanceRating:
-        """评估重要性并抽取实体"""
-        try:
-            chain = self._importance_prompt | self.llm | self._importance_parser
-            result = await chain.ainvoke({"content": content})
-            return result
-        except Exception as e:
-            print(f"Error assessing importance: {e}")
-            return ImportanceRating(
-                score=1.0, reasoning="评估失败，使用默认分数", extracted_entities=[]
-            )
-
-    async def _extract_concepts(self, content: str) -> ConceptExtraction:
-        """抽取概念和实体"""
-        try:
-            chain = self._concept_prompt | self.llm | self._concept_parser
-            result = await chain.ainvoke(
-                {
-                    "content": content,
-                    "max_concepts": self.config.indexing_config.max_concepts_per_memory,
-                }
-            )
-            return result
-        except Exception as e:
-            print(f"Error extracting concepts: {e}")
-            return ConceptExtraction(concepts=[], keywords=[], entities=[])
-
-    async def _extract_questions(self, content: str) -> QuestionExtraction:
-        """抽取问题"""
-        try:
-            chain = self._question_prompt | self.llm | self._question_parser
-            result = await chain.ainvoke(
-                {
-                    "content": content,
-                    "max_questions": self.config.indexing_config.max_questions_per_memory,
-                }
-            )
-            return result
-        except Exception as e:
-            print(f"Error extracting questions: {e}")
-            return QuestionExtraction(questions=[])
-
-    async def _generate_summary(self, content: str) -> SummaryGeneration:
-        """生成摘要"""
-        try:
-            chain = self._summary_prompt | self.llm | self._summary_parser
-            result = await chain.ainvoke({"content": content})
-            return result
-        except Exception as e:
-            print(f"Error generating summary: {e}")
-            return SummaryGeneration(summary="", key_points=[])
-
-    def should_process_memory(self, memory: MemoryRecord) -> Dict[str, bool]:
-        """判断记忆是否需要各种类型的处理"""
-        config = self.config.indexing_config
-        importance = memory.metadata.importance_score
-
-        return {
-            "concepts": (
-                config.enable_concept_extraction
-                and importance >= config.concept_extraction_threshold
-            ),
-            "questions": (
-                config.enable_question_extraction
-                and importance >= config.question_extraction_threshold
-            ),
-            "summary": config.enable_summary_generation,
-        }
-
-    async def reprocess_memory(
-        self, memory: MemoryRecord, processing_types: List[str]
-    ) -> MemoryRecord:
-        """重新处理记忆的特定索引类型"""
-        config = self.config.indexing_config
-
-        if "concepts" in processing_types and config.enable_concept_extraction:
-            concept_result = await self._extract_concepts(memory.content)
-            memory.indexes.concepts = concept_result.concepts[
-                : config.max_concepts_per_memory
-            ]
-            memory.indexes.keywords = concept_result.keywords
-
-        if "questions" in processing_types and config.enable_question_extraction:
-            question_result = await self._extract_questions(memory.content)
-            memory.indexes.questions = question_result.questions[
-                : config.max_questions_per_memory
-            ]
-
-        if "summary" in processing_types and config.enable_summary_generation:
-            summary_result = await self._generate_summary(memory.content)
-            memory.indexes.summary = summary_result.summary
+        if summary_res:
+            memory.indexes.summary = summary_res.summary
 
         return memory
 
     def get_processing_stats(self) -> Dict[str, Any]:
-        """获取处理统计信息"""
-        # 简化实现，实际应该记录处理计数、耗时等
+        """获取处理统计信息（简化版）"""
         return {
             "total_processed": 0,
             "avg_processing_time_ms": 0.0,
-            "success_rate": 1.0,
             "enabled_features": {
                 "concept_extraction": self.config.indexing_config.enable_concept_extraction,
                 "question_extraction": self.config.indexing_config.enable_question_extraction,
@@ -306,39 +144,125 @@ class IndexingProcessor:
             },
         }
 
+    async def _assess_importance(self, content: str) -> ImportanceRating:
+        try:
+            return await (
+                self._importance_prompt | self.llm | self._importance_parser
+            ).ainvoke({"content": content})
+        except Exception as e:
+            print(f"Error assessing importance: {e}")
+            return ImportanceRating(
+                score=1.0, reasoning="评估失败", extracted_entities=[]
+            )
+
+    async def _extract_concepts(self, content: str) -> ConceptExtraction:
+        try:
+            return await (
+                self._concept_prompt | self.llm | self._concept_parser
+            ).ainvoke(
+                {
+                    "content": content,
+                    "max_concepts": self.config.indexing_config.max_concepts_per_memory,
+                }
+            )
+        except Exception as e:
+            print(f"Error extracting concepts: {e}")
+            return ConceptExtraction(concepts=[], keywords=[], entities=[])
+
+    async def _extract_questions(self, content: str) -> QuestionExtraction:
+        try:
+            return await (
+                self._question_prompt | self.llm | self._question_parser
+            ).ainvoke(
+                {
+                    "content": content,
+                    "max_questions": self.config.indexing_config.max_questions_per_memory,
+                }
+            )
+        except Exception as e:
+            print(f"Error extracting questions: {e}")
+            return QuestionExtraction(questions=[])
+
+    async def _generate_summary(self, content: str) -> SummaryGeneration:
+        try:
+            return await (
+                self._summary_prompt | self.llm | self._summary_parser
+            ).ainvoke({"content": content})
+        except Exception as e:
+            print(f"Error generating summary: {e}")
+            return SummaryGeneration(summary="", key_points=[])
+
 
 class StreamingIndexProcessor:
-    """流式索引处理器，用于实时处理"""
+    """流式索引处理器，用于实时后台处理"""
 
-    def __init__(self, base_processor: IndexingProcessor):
+    def __init__(
+        self,
+        base_processor: IndexingProcessor,
+        storage_backend: IStorageBackend,
+        config: EverMindConfig,
+    ):
         self.base_processor = base_processor
+        self.storage = storage_backend
+        self.config = config
         self._processing_queue = asyncio.Queue()
         self._is_running = False
+        self._worker_task: Optional[asyncio.Task] = None
 
-    async def start_processing(self):
-        """开始后台处理"""
+    async def _update_associations(self, memory: MemoryRecord):
+        if not self.config.is_feature_enabled("association"):
+            return
+        namespace = memory.metadata.namespace
+        entities = memory.metadata.associated_entities
+        for entity in entities:
+            await self.storage.association_store.add_association(
+                entity, memory.id, namespace
+            )
+        for i, entity1 in enumerate(entities):
+            for entity2 in entities[i + 1 :]:
+                await self.storage.association_store.update_association_strength(
+                    entity1, entity2, namespace
+                )
+
+    async def _process_loop(self):
+        """后台处理循环"""
         self._is_running = True
         while self._is_running:
             try:
-                memory = await asyncio.wait_for(
+                memory: MemoryRecord = await asyncio.wait_for(
                     self._processing_queue.get(), timeout=1.0
                 )
-                await self.base_processor.process_memory(memory)
+                processed_memory = await self.base_processor.process_memory(memory)
+                await self.storage.vector_store.store_memory(processed_memory)
+                await self._update_associations(processed_memory)
                 self._processing_queue.task_done()
             except asyncio.TimeoutError:
                 continue
+            except asyncio.CancelledError:
+                break
             except Exception as e:
-                print(f"Error in streaming processor: {e}")
+                print(f"Error in streaming processor loop: {e}")
+
+    def start_processing(self):
+        """启动后台处理任务"""
+        if not self._is_running:
+            self._worker_task = asyncio.create_task(self._process_loop())
 
     async def submit_memory(self, memory: MemoryRecord):
-        """提交记忆到处理队列"""
         await self._processing_queue.put(memory)
 
     async def stop_processing(self):
-        """停止处理"""
-        self._is_running = False
+        if not self._is_running:
+            return
         await self._processing_queue.join()
+        self._is_running = False
+        if self._worker_task:
+            self._worker_task.cancel()
+            try:
+                await self._worker_task
+            except asyncio.CancelledError:
+                pass
+        self._worker_task = None
 
     def get_queue_size(self) -> int:
-        """获取队列大小"""
         return self._processing_queue.qsize()
