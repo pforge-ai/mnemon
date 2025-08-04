@@ -1,0 +1,167 @@
+<mxfile host="65bd71144e">
+    <diagram name="EverMind Architecture" id="evermind-arch">
+        <mxGraphModel dx="974" dy="646" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1169" pageHeight="827" math="0" shadow="0">
+            <root>
+                <mxCell id="0"/>
+                <mxCell id="1" parent="0"/>
+                <mxCell id="title" value="🧠 EverMind 渐进式智能记忆系统架构" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=20;fontStyle=1;fontColor=#2E86AB;" parent="1" vertex="1">
+                    <mxGeometry x="284" y="20" width="600" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="external-box" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F1F8FF;strokeColor=#4A90E2;strokeWidth=2;dashed=1;" parent="1" vertex="1">
+                    <mxGeometry x="200" y="80" width="760" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="external-title" value="🔌 外部接口层" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=14;fontStyle=1;fontColor=#4A90E2;" parent="1" vertex="1">
+                    <mxGeometry x="210" y="95" width="100" height="25" as="geometry"/>
+                </mxCell>
+                <mxCell id="llm-interface" value="🤖 LLM" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E3F2FD;strokeColor=#2196F3;fontColor=#1976D2;" parent="1" vertex="1">
+                    <mxGeometry x="340" y="95" width="160" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="embedding-interface" value="🔤 Embeddings" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E8F5E8;strokeColor=#4CAF50;fontColor=#388E3C;" parent="1" vertex="1">
+                    <mxGeometry x="520" y="95" width="170" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="qdrant-interface" value="💾 Qdrant&lt;div&gt;(Vector DB)&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF3E0;strokeColor=#FF9800;fontColor=#F57C00;" parent="1" vertex="1">
+                    <mxGeometry x="710" y="95" width="190" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="management-box" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E8F5E8;strokeColor=#4CAF50;strokeWidth=3;" parent="1" vertex="1">
+                    <mxGeometry x="200" y="170" width="760" height="90" as="geometry"/>
+                </mxCell>
+                <mxCell id="management-title" value="🎯 管理层 (Management Layer)" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=14;fontStyle=1;fontColor=#388E3C;" parent="1" vertex="1">
+                    <mxGeometry x="190" y="175" width="250" height="25" as="geometry"/>
+                </mxCell>
+                <mxCell id="memory-manager" value="🧠 MemoryManager&lt;div&gt;统一管理接口&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#C8E6C9;strokeColor=#4CAF50;fontColor=#2E7D32;fontSize=12;fontStyle=1;" parent="1" vertex="1">
+                    <mxGeometry x="480" y="200" width="200" height="50" as="geometry"/>
+                </mxCell>
+                <mxCell id="namespace-mgr" value="🏷️ Namespace&lt;div&gt;Manager&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#DCEDC8;strokeColor=#8BC34A;fontColor=#558B2F;" parent="1" vertex="1">
+                    <mxGeometry x="235" y="210" width="160" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="config-mgr" value="⚙️ Config&lt;div&gt;Manager&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#DCEDC8;strokeColor=#8BC34A;fontColor=#558B2F;" parent="1" vertex="1">
+                    <mxGeometry x="690" y="210" width="140" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="task-queue" value="📋 Task&lt;div&gt;Queue&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#DCEDC8;strokeColor=#8BC34A;fontColor=#558B2F;" parent="1" vertex="1">
+                    <mxGeometry x="840" y="210" width="100" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="retrieval-box" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E3F2FD;strokeColor=#2196F3;strokeWidth=3;" parent="1" vertex="1">
+                    <mxGeometry x="200" y="290" width="760" height="90" as="geometry"/>
+                </mxCell>
+                <mxCell id="retrieval-title" value="🔍 检索层 (Retrieval Layer)" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=14;fontStyle=1;fontColor=#1976D2;" parent="1" vertex="1">
+                    <mxGeometry x="210" y="295" width="180" height="25" as="geometry"/>
+                </mxCell>
+                <mxCell id="retrieval-engine" value="🎯 RetrievalEngine\nRR权重检索引擎" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#BBDEFB;strokeColor=#2196F3;fontColor=#0D47A1;fontSize=12;fontStyle=1;" parent="1" vertex="1">
+                    <mxGeometry x="480" y="320" width="200" height="50" as="geometry"/>
+                </mxCell>
+                <mxCell id="rr-weights" value="⚖️ RR Weights&lt;div&gt;相关性+时效性&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#C5E1F7;strokeColor=#1E88E5;fontColor=#0277BD;" parent="1" vertex="1">
+                    <mxGeometry x="265" y="330" width="100" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="context-hints" value="💡 Context&lt;div&gt;Hints&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#C5E1F7;strokeColor=#1E88E5;fontColor=#0277BD;" parent="1" vertex="1">
+                    <mxGeometry x="385" y="330" width="70" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="multi-granular" value="🔍 Multi-granular&lt;div&gt;Search&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#C5E1F7;strokeColor=#1E88E5;fontColor=#0277BD;" parent="1" vertex="1">
+                    <mxGeometry x="690" y="330" width="140" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="association-search" value="🔗 Association&lt;div&gt;Search&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#C5E1F7;strokeColor=#1E88E5;fontColor=#0277BD;" parent="1" vertex="1">
+                    <mxGeometry x="840" y="330" width="100" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="indexing-box" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF3E0;strokeColor=#FF9800;strokeWidth=3;" parent="1" vertex="1">
+                    <mxGeometry x="200" y="414" width="760" height="90" as="geometry"/>
+                </mxCell>
+                <mxCell id="indexing-title" value="📑 索引层 (Indexing Layer)" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=14;fontStyle=1;fontColor=#F57C00;" parent="1" vertex="1">
+                    <mxGeometry x="190" y="415" width="230" height="25" as="geometry"/>
+                </mxCell>
+                <mxCell id="indexing-processor" value="🏭 IndexingProcessor&lt;div&gt;多粒度索引处理器&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFD54F;strokeColor=#FF9800;fontColor=#E65100;fontSize=12;fontStyle=1;" parent="1" vertex="1">
+                    <mxGeometry x="510" y="440" width="140" height="50" as="geometry"/>
+                </mxCell>
+                <mxCell id="concept-extraction" value="🧠 Concept&lt;div&gt;Extraction&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFE0B2;strokeColor=#FB8C00;fontColor=#E65100;" parent="1" vertex="1">
+                    <mxGeometry x="420" y="450" width="80" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="question-extraction" value="❓ Question&lt;div&gt;Extraction&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFE0B2;strokeColor=#FB8C00;fontColor=#E65100;" parent="1" vertex="1">
+                    <mxGeometry x="320" y="450" width="90" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="summary-generation" value="📝 Summary&lt;div&gt;Generation&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFE0B2;strokeColor=#FB8C00;fontColor=#E65100;" parent="1" vertex="1">
+                    <mxGeometry x="210" y="450" width="100" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="importance-rating" value="⭐ Importance&lt;div&gt;Rating&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFE0B2;strokeColor=#FB8C00;fontColor=#E65100;" parent="1" vertex="1">
+                    <mxGeometry x="700" y="450" width="90" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="streaming-processor" value="🌊 Streaming&lt;div&gt;Processor&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFE0B2;strokeColor=#FB8C00;fontColor=#E65100;" parent="1" vertex="1">
+                    <mxGeometry x="830" y="450" width="90" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="storage-box" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F3E5F5;strokeColor=#9C27B0;strokeWidth=3;" parent="1" vertex="1">
+                    <mxGeometry x="200" y="530" width="760" height="90" as="geometry"/>
+                </mxCell>
+                <mxCell id="storage-title" value="💾 存储层 (Storage Layer)" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=14;fontStyle=1;fontColor=#7B1FA2;" parent="1" vertex="1">
+                    <mxGeometry x="195" y="535" width="220" height="25" as="geometry"/>
+                </mxCell>
+                <mxCell id="storage-backend" value="🔌 StorageBackend&lt;div&gt;可插拔存储后端&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#CE93D8;strokeColor=#9C27B0;fontColor=#4A148C;fontSize=12;fontStyle=1;" parent="1" vertex="1">
+                    <mxGeometry x="480" y="560" width="200" height="50" as="geometry"/>
+                </mxCell>
+                <mxCell id="vector-store" value="📊 Vector&lt;div&gt;Store&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E1BEE7;strokeColor=#BA68C8;fontColor=#6A1B9A;" parent="1" vertex="1">
+                    <mxGeometry x="220" y="570" width="100" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="association-store" value="🔗 Association&lt;div&gt;Store&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E1BEE7;strokeColor=#BA68C8;fontColor=#6A1B9A;" parent="1" vertex="1">
+                    <mxGeometry x="335" y="570" width="110" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="reasoning-store" value="🧩 Reasoning&lt;div&gt;Store&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E1BEE7;strokeColor=#BA68C8;fontColor=#6A1B9A;" parent="1" vertex="1">
+                    <mxGeometry x="720" y="570" width="80" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="cache-store" value="⚡ Cache&lt;div&gt;Store&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E1BEE7;strokeColor=#BA68C8;fontColor=#6A1B9A;" parent="1" vertex="1">
+                    <mxGeometry x="820" y="570" width="80" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="physical-box" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#EFEBE9;strokeColor=#8D6E63;strokeWidth=2;dashed=1;" parent="1" vertex="1">
+                    <mxGeometry x="200" y="650" width="760" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="physical-title" value="🏗️ 物理存储层" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=14;fontStyle=1;fontColor=#5D4037;" parent="1" vertex="1">
+                    <mxGeometry x="210" y="655" width="120" height="25" as="geometry"/>
+                </mxCell>
+                <mxCell id="qdrant-db" value="📦 Qdrant&lt;div&gt;Vector Database&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#D7CCC8;strokeColor=#8D6E63;fontColor=#3E2723;" parent="1" vertex="1">
+                    <mxGeometry x="350" y="670" width="120" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="memory-db" value="💾 Memory&lt;div&gt;In-Process Store&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#D7CCC8;strokeColor=#8D6E63;fontColor=#3E2723;" parent="1" vertex="1">
+                    <mxGeometry x="500" y="670" width="120" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="redis-cache" value="⚡ Redis&lt;div&gt;Cache (Optional)&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#D7CCC8;strokeColor=#8D6E63;fontColor=#3E2723;" parent="1" vertex="1">
+                    <mxGeometry x="650" y="670" width="120" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="flow2" value="" style="endArrow=classic;html=1;rounded=0;strokeColor=#4CAF50;strokeWidth=3;" parent="1" edge="1">
+                    <mxGeometry width="50" height="50" relative="1" as="geometry">
+                        <mxPoint x="580" y="250" as="sourcePoint"/>
+                        <mxPoint x="580" y="320" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="flow3" value="" style="endArrow=classic;html=1;rounded=0;strokeColor=#2196F3;strokeWidth=3;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" parent="1" edge="1" target="indexing-processor">
+                    <mxGeometry width="50" height="50" relative="1" as="geometry">
+                        <mxPoint x="580" y="370" as="sourcePoint"/>
+                        <mxPoint x="580" y="440" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="flow4" value="" style="endArrow=classic;html=1;rounded=0;strokeColor=#FF9800;strokeWidth=3;" parent="1" edge="1">
+                    <mxGeometry width="50" height="50" relative="1" as="geometry">
+                        <mxPoint x="580" y="490" as="sourcePoint"/>
+                        <mxPoint x="580" y="560" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="flow5" value="" style="endArrow=classic;html=1;rounded=0;strokeColor=#9C27B0;strokeWidth=3;" parent="1" edge="1">
+                    <mxGeometry width="50" height="50" relative="1" as="geometry">
+                        <mxPoint x="580" y="610" as="sourcePoint"/>
+                        <mxPoint x="580" y="670" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="context-flow" value="💡 引子生成" style="endArrow=classic;html=1;rounded=0;strokeColor=#FFC107;strokeWidth=2;dashed=1;exitX=0.5;exitY=0;exitDx=0;exitDy=0;" parent="1" edge="1" source="context-hints">
+                    <mxGeometry width="50" height="50" relative="1" as="geometry">
+                        <mxPoint x="390" y="330" as="sourcePoint"/>
+                        <mxPoint x="480" y="230" as="targetPoint"/>
+                        <mxPoint as="offset"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="legend-box" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FAFAFA;strokeColor=#BDBDBD;strokeWidth=1;" parent="1" vertex="1">
+                    <mxGeometry x="40" y="730" width="1080" height="80" as="geometry"/>
+                </mxCell>
+                <mxCell id="legend-title" value="📋 架构说明" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=14;fontStyle=1;fontColor=#424242;" parent="1" vertex="1">
+                    <mxGeometry x="50" y="735" width="100" height="25" as="geometry"/>
+                </mxCell>
+                <mxCell id="legend-text" value="• 🎯 管理层：统一的对外接口，负责协调各组件  • 🔍 检索层：RR权重检索，支持多粒度和关联查询  • 📑 索引层：自动抽取概念/问题/摘要等多维索引  • 💾 存储层：可插拔的存储抽象，当前基于Qdrant实现  • 💡 引子机制：为智能体提供轻量级记忆线索  • 🔗 关联追踪：实体关系自动发现和维护" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=11;fontColor=#616161;" parent="1" vertex="1">
+                    <mxGeometry x="60" y="760" width="1000" height="40" as="geometry"/>
+                </mxCell>
+            </root>
+        </mxGraphModel>
+    </diagram>
+</mxfile>
